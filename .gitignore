@@ -1,0 +1,6 @@
+.vector_cache
+.history
+__pycache__
+*.egg-info
+./output/
+pretrained

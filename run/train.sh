@@ -1,5 +1,6 @@
+#!/bin/bash
+# Please update the path to your own environment in config.yaml and following arguments befrore running the script
 cd ./scripts
-
 
 exp_dir="your experiment directory"
 

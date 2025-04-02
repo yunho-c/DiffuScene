@@ -396,7 +396,7 @@ def render_to_folder(
         decoded_surf = None
         renderables, trimesh_meshes, model_jids = get_textured_objects_based_on_objfeats(
             bbox_params_t.numpy(), objects_dataset, np.array(dataset.class_labels), diffusion=diffusion, no_texture=args.no_texture,
-            query_objfeats=objfeats, query_surfs=decoded_surf, 
+            query_objfeats=objfeats, #query_surfs=decoded_surf, 
         )
     else:
         renderables, trimesh_meshes, model_jids = get_textured_objects(
@@ -488,21 +488,22 @@ def render_scene_from_bbox_params(
     
     if args.retrive_objfeats:
         objfeats = boxes["objfeats"].cpu().numpy()
-        if args.retrive_surface:
-            print('shape retrieval based on decoded surface')
-            B, N, C = boxes["objfeats"].shape
-            with torch.no_grad():
-                decoded_surf = network_objae.decode(boxes["objfeats"].to(device).float().reshape(B*N, C))
-                assert decoded_surf.shape[-1] == 3
-                decoded_surf = decoded_surf.reshape(B, N, -1, 3)
-                decoded_surf = decoded_surf.cpu().numpy()
-        else:
-            print('shape retrieval based on obj latent feats')
-            decoded_surf = None
+        # if args.retrive_surface:
+        #     print('shape retrieval based on decoded surface')
+        #     B, N, C = boxes["objfeats"].shape
+        #     with torch.no_grad():
+        #         decoded_surf = network_objae.decode(boxes["objfeats"].to(device).float().reshape(B*N, C))
+        #         assert decoded_surf.shape[-1] == 3
+        #         decoded_surf = decoded_surf.reshape(B, N, -1, 3)
+        #         decoded_surf = decoded_surf.cpu().numpy()
+        # else:
+        #     print('shape retrieval based on obj latent feats')
+        #     decoded_surf = None
 
         renderables, trimesh_meshes, model_jids = get_textured_objects_based_on_objfeats(
             bbox_params_t, objects_dataset, classes, diffusion=diffusion, no_texture=args.no_texture,
-            query_objfeats=objfeats, query_surfs=decoded_surf, 
+            query_objfeats=objfeats, 
+            # query_surfs=decoded_surf, 
         )
     else:
         renderables, trimesh_meshes, model_jids = get_textured_objects(

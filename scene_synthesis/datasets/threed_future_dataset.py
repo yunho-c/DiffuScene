@@ -77,10 +77,10 @@ class ThreedFutureDataset(object):
 
     @classmethod
     def from_dataset_directory(
-        cls, dataset_directory, path_to_model_info, path_to_models
+        cls, dataset_directory, path_to_model_info, path_to_models, output_directory=None,
     ):
         objects = parse_threed_future_models(
-            dataset_directory, path_to_models, path_to_model_info
+            dataset_directory, path_to_models, path_to_model_info, output_directory
         )
         return cls(objects)
 

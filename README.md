@@ -35,8 +35,17 @@ cd ChamferDistancePytorch/chamfer3D
 python setup.py install
 ```
 
-## Pretrained models
-The pretrained models of DiffuScene and ShapeAutoEncoder can be downloaded from [here](https://drive.google.com/drive/folders/1EhvyNCAWWto6vMt0vXWMKBoSdYR_9pC2?usp=drive_link).
+## Download
+
+The pretrained model, results, and preprocess datasets are put into [GoogleDrive](https://drive.google.com/drive/folders/1EhvyNCAWWto6vMt0vXWMKBoSdYR_9pC2?usp=sharing)
+
+### Pretrained models and Results
+The pretrained models of DiffuScene (unconditional, text, scene_rearrangement) can be downloaded from [here](https://drive.google.com/file/d/1pk9AzGcBz_kRfmRzvFNDW5byk4MwbXEm/view?usp=sharing). 
+The pretrained model of ShapeAutoencoder can be downloaded from [here](https://drive.google.com/file/d/1xuFa_Hh6BOZqfaAnlG-W_9mA1gilU6nI/view?usp=sharing).
+The google drive also contains [the results of unconditional generation](https://drive.google.com/file/d/1EJ2VPZvbuKeR-ob1SsiwEC7cAEFDug3i/view?usp=sharing).
+
+#### Preprocessed dataset
+To directly train and evaluate DiffuScene without tedious data preprocessing, we also provide the preprocessed [3D-Front](https://drive.google.com/file/d/1UNSFN0kULyOzUErDPVvkKYbmfzA-4MsG/view?usp=sharing) and [3D-FUTURE](https://drive.google.com/file/d/16fz81Eh6B6pbZNGTMbe0FdfNwIuQicE1/view?usp=sharing)
 
 ## Dataset
 
@@ -45,8 +54,8 @@ and the [3D-FUTURE](https://www.google.com/search?q=3d-future&oq=3d-fut&aqs=chro
 dataset. To download both datasets, please refer to the instructions provided in the dataset's
 [webpage](https://tianchi.aliyun.com/specials/promotion/alibaba-3d-scene-dataset).
 
-### Pickle the 3D-FUTURE dataset
 
+### Pickle the 3D-FUTURE dataset
 To accelerate the preprocessing speed, we can sepcify the `PATH_TO_SCENES` environment variable for all scripts. This filepath contains the
 parsed `ThreedFutureDataset` after being pickled. To pickle it, you can simply run this script as follows:
 ```
@@ -88,8 +97,6 @@ Finally, you can run `preprocessing_data.py` to read and pickle object propertie
 ```
 PATH_TO_SCENES="/cluster/balrog/jtang/3d_front_processed/threed_front.pkl" python preprocess_data.py /cluster/balrog/jtang/3d_front_processed/livingrooms_objfeats_32_64 /cluster/balrog/jtang/3D-FRONT/ /cluster/balrog/jtang/3D-FUTURE-model /cluster/balrog/jtang/3D-FUTURE-model/model_info.json --dataset_filtering threed_front_livingroom --annotation_file ../config/livingroom_threed_front_splits.csv --add_objfeats
 ```
-The proprossed datasets can also be downloaded from [here](https://drive.google.com/file/d/1UNSFN0kULyOzUErDPVvkKYbmfzA-4MsG/view?usp=sharing).
-
 
 ## Training & Evaluate Diffuscene
 To train diffuscene on 3D Front-bedrooms, you can run 

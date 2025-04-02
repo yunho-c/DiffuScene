@@ -217,12 +217,13 @@ class ThreedFront(BaseDataset):
 
     @classmethod
     def from_dataset_directory(cls, dataset_directory, path_to_model_info,
-                               path_to_models, path_to_room_masks_dir=None,
+                               path_to_models, output_directory=None, path_to_room_masks_dir=None,
                                path_to_bounds=None, filter_fn=lambda s: s):
         scenes = parse_threed_front_scenes(
             dataset_directory,
             path_to_model_info,
             path_to_models,
+            output_directory,
             path_to_room_masks_dir
         )
         bounds = None

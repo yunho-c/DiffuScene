@@ -90,6 +90,7 @@ def main(argv):
         dataset_directory=args.path_to_3d_front_dataset_directory,
         path_to_model_info=args.path_to_model_info,
         path_to_models=args.path_to_3d_future_dataset_directory,
+        output_directory=args.output_directory,
         filter_fn=filter_function(config, ["train", "val"], args.without_lamps)
     )
     print("Loading dataset with {} rooms".format(len(scenes_dataset)))
