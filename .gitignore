@@ -1,3 +1,6 @@
+downloads/*
+!downloads/download.sh
+
 .vector_cache
 .history
 __pycache__
