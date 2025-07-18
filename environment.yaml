@@ -16,7 +16,7 @@ dependencies:
   - pillow=7.2.0
   - scipy=1.8.1
   - tqdm=4.64.1
-  - trimesh=3.12.7
+  - trimesh
   - matplotlib=3.3.1
   - wxpython=4.0.7
   - pip:
