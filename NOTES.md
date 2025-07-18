@@ -81,3 +81,99 @@ graph TD
     style A1 fill:#dfd,stroke:#333,stroke-width:2px
     style A2 fill:#dfd,stroke:#333,stroke-width:2px
 ```
+
+
+## Detailed Mermaid Diagram
+
+```mermaid
+graph TD
+    subgraph "Data Sources"
+        direction LR
+        A1[3D-FRONT Dataset
+.json scene files]
+        A2[3D-FUTURE Models
+.obj models & textures]
+    end
+
+    subgraph "Configuration Files"
+        direction LR
+        C1[config/**/*.yaml
+Model & Training Hyperparameters]
+        C2[config/*.csv
+Train/Val/Test Splits]
+        C3[config/black_list.txt
+Invalid Object IDs]
+    end
+
+    subgraph "Data Preparation Pipeline"
+        B1("scripts/preprocess_data.py") -- uses --> C2 & C3
+        B2("scene_synthesis/datasets/threed_front.py
+`parse_threed_front_scenes`")
+        B3("scene_synthesis/datasets/threed_front_dataset.py
+`dataset_encoding_factory`")
+        B4("scene_synthesis/datasets/base.py
+Filtering & Augmentation Logic")
+        B5["Cached & Encoded Dataset
+(e.g., normalized vectors, class labels)"]
+
+        A1 & A2 --> B1
+        B1 --> B2
+        B2 -- "applies filters & augmentations" --> B4
+        B4 -- "encodes data" --> B3
+        B3 --> B5
+        C1 -- "defines dataset paths & encoding type" --> B3
+    end
+
+    subgraph "Training Pipeline"
+        D1("scripts/train_diffusion.py") -- reads --> C1
+        D2("scene_synthesis/networks/__init__.py
+`build_network`")
+        D3("scene_synthesis/networks/diffusion_scene_layout_ddpm.py
+`DiffusionSceneLayout_DDPM`")
+        D4("scene_synthesis/networks/denoise_net.py
+`Unet1D`")
+        D5("scene_synthesis/networks/diffusion_ddpm.py
+`GaussianDiffusion`")
+        D6[Trained Model Checkpoint
+.pth file]
+
+        B5 -- "provides training data" --> D1
+        D1 -- "instantiates" --> D2
+        D2 -- "builds" --> D3
+        D3 -- "uses denoising network" --> D4
+        D3 -- "uses diffusion logic" --> D5
+        D3 -- "is trained" --> D6
+    end
+
+    subgraph "Conditional Inputs (Optional)"
+        F1[Text Descriptions]
+        F2["Partial Scenes
+(for completion/rearrangement)"]
+        F1 -- "as condition" --> D3
+        F2 -- "as condition" --> D3
+    end
+
+    subgraph "Inference & Generation Pipeline"
+        E1("scripts/generate_diffusion.py") -- reads --> C1
+        E2("scene_synthesis/utils.py
+`get_textured_objects...`")
+        E3("scene_synthesis/datasets/threed_future_dataset.py")
+        E4[Generated 3D Scene]
+        E5(demo/*
+Floor Textures, etc.)
+
+        D6 -- "loads" --> E1
+        E1 -- "generates layout parameters" --> E2
+        A2 -- "provides models for" --> E3
+        E3 -- "is queried by" --> E2
+        E2 -- "retrieves models & assembles scene" --> E4
+        E5 -- "provides assets for" --> E2
+        F1 & F2 -- "can be input to" --> E1
+    end
+
+    style B5 fill:#f9f,stroke:#333,stroke-width:2px
+    style D6 fill:#f9f,stroke:#333,stroke-width:2px
+    style E4 fill:#ccf,stroke:#333,stroke-width:2px
+    style A1 fill:#dfd,stroke:#333,stroke-width:2px
+    style A2 fill:#dfd,stroke:#333,stroke-width:2px
+```
