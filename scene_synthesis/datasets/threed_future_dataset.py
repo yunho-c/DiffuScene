@@ -88,6 +88,10 @@ class ThreedFutureDataset(object):
     def from_pickled_dataset(cls, path_to_pickled_dataset):
         with open(path_to_pickled_dataset, "rb") as f:
             dataset = pickle.load(f)
+
+        for obj in dataset:
+            obj.path_to_models = "/home/ycho358/GitHub/DiffuScene/downloads/3D-FUTURE-model"
+
         return dataset
 
 

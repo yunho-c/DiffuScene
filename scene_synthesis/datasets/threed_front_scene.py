@@ -199,7 +199,7 @@ class ThreedFutureModel(BaseThreedFutureModel):
     ):
         super().__init__(model_uid, model_jid, position, rotation, scale)
         self.model_info = model_info
-        self.path_to_models = path_to_models
+        self.path_to_models = "/home/ycho358/GitHub/DiffuScene/downloads/3D-FUTURE-model"
         self._label = None
 
     @property

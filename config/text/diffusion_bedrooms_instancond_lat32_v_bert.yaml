@@ -45,7 +45,6 @@ network:
         loss_separate: true
         # calculate iou loss
         loss_iou: true
-        # train_stats_file: "/cluster/balrog/jtang/3d_front_processed/bedrooms_objfeats_32_64/dataset_stats.txt"
         train_stats_file: "/home/ycho358/GitHub/DiffuScene/downloads/3d_front_processed/bedrooms_objfeats_32_64/dataset_stats.txt"
 
     net_kwargs:
