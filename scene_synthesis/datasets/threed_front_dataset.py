@@ -639,10 +639,13 @@ class OrderedDataset(DatasetDecoratorBase):
 ####
 import random
 import torchtext
+from torchtext import vocab
 from num2words import num2words
 from nltk.tokenize import word_tokenize
 from .utils_text import compute_rel, get_article
 from collections import Counter, defaultdict
+
+torchtext.disable_torchtext_deprecation_warning()
 
 
 def dict_bbox_to_vec(dict_box):
@@ -662,7 +665,7 @@ class Add_Text(DatasetDecoratorBase):
         super().__init__(dataset)
         self.eval = eval
         self.max_sentences = max_sentences
-        self.glove = torchtext.vocab.GloVe(
+        self.glove = vocab.GloVe(
             name="6B",
             dim=50,
             cache="/home/ycho358/GitHub/DiffuScene/downloads/DiffuScene/.vector_cache",

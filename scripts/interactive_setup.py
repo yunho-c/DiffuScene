@@ -15,11 +15,17 @@ logging.getLogger("trimesh").setLevel(logging.ERROR)
 
 # Step 2: Set parameters (REPLACE WITH YOUR PATHS if necessary)
 # NOTE: These paths are relative to the `scripts` directory.
-config_file = "../config/uncond/diffusion_bedrooms_instancond_lat32_v.yaml"
+# config_file = "../config/uncond/diffusion_bedrooms_instancond_lat32_v.yaml"  # NOTE: unconditional
+config_file = "../config/text/diffusion_bedrooms_instancond_lat32_v_bert.yaml"  # NOTE: text conditioned
 # IMPORTANT: Set the path to your pre-trained model weights
-weight_file = None  # e.g., "../pretrained/bedrooms_uncond.pth"
+# weight_file = None  # e.g., "../pretrained/bedrooms_uncond.pth"
+# weight_file = "../pretrained/bedrooms_uncond/model_30000"
+weight_file = "../downloads/pretrained_diffusion/bedrooms_bert/model_32000"
 # IMPORTANT: Set the path to your pickled 3D-FUTURE models
-path_to_pickled_3d_futute_models = "../demo/threed_future_models.pkl"
+path_to_pickled_3d_future_models = "../downloads/3d_front_processed/threed_future_model_bedroom.pkl"
+# path_to_pickled_3d_future_models = "../downloads/3d_front_processed/threed_future_model_diningroom.pkl"
+# path_to_pickled_3d_future_models = "../downloads/3d_front_processed/threed_future_model_library.pkl"
+# path_to_pickled_3d_future_models = "../downloads/3d_front_processed/threed_future_model_livingroom.pkl"
 path_to_floor_plan_textures = "../demo/floor_plan_texture_images"
 
 # Step 3: Initialize device, config, datasets, and network
@@ -29,31 +35,34 @@ print("Running code on", device)
 config = load_config(config_file)
 
 # Modify config for evaluation as in the original script
-if 'text' in config["data"]["encoding_type"] and 'textfix' not in config["data"]["encoding_type"]:
-    config["data"]["encoding_type"] = config["data"]["encoding_type"].replace('text', 'textfix')
+if (
+    "text" in config["data"]["encoding_type"]
+    and "textfix" not in config["data"]["encoding_type"]
+):
+    config["data"]["encoding_type"] = config["data"]["encoding_type"].replace(
+        "text", "textfix"
+    )
 if "no_prm" not in config["data"]["encoding_type"]:
-    print('NO PERM AUG in test')
+    print("NO PERM AUG in test")
     config["data"]["encoding_type"] += "_no_prm"
-print('Encoding type:', config["data"]["encoding_type"])
+print("Encoding type:", config["data"]["encoding_type"])
 
 # Load datasets
 raw_dataset, dataset = get_dataset_raw_and_encoded(
     config["data"],
     filter_fn=filter_function(
-        config["data"],
-        split=config["validation"].get("splits", ["test"])
+        config["data"], split=config["validation"].get("splits", ["test"])
     ),
-    split=config["validation"].get("splits", ["test"])
+    split=config["validation"].get("splits", ["test"]),
 )
 objects_dataset = ThreedFutureDataset.from_pickled_dataset(
-    path_to_pickled_3d_futute_models
+    path_to_pickled_3d_future_models
 )
 print(f"Loaded {len(dataset)} scenes and {len(objects_dataset)} 3D models.")
 
 # Build and load network
 network, _, _ = build_network(
-    dataset.feature_size, dataset.n_classes,
-    config, weight_file, device=device
+    dataset.feature_size, dataset.n_classes, config, weight_file, device=device
 )
 network.eval()
 

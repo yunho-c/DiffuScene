@@ -6,11 +6,11 @@ This document outlines the architecture and data flow of the DiffuScene project.
 
 The DiffuScene system is designed to generate 3D scenes using a diffusion model. The workflow is divided into three main stages: Data Preparation, Training, and Inference.
 
-1.  **Data Preparation**: Raw 3D scene data from the 3D-FRONT and 3D-FUTURE datasets is processed by scripts in the `scripts/` directory. The core logic in `scene_synthesis/datasets/` handles filtering, splitting (using `.csv` files from `config/`), and encoding the scenes into a vectorized format (positions, sizes, classes, etc.). This processed data is cached for efficient use.
+1. **Data Preparation**: Raw 3D scene data from the 3D-FRONT and 3D-FUTURE datasets is processed by scripts in the `scripts/` directory. The core logic in `scene_synthesis/datasets/` handles filtering, splitting (using `.csv` files from `config/`), and encoding the scenes into a vectorized format (positions, sizes, classes, etc.). This processed data is cached for efficient use.
 
-2.  **Training**: The training process is initiated by scripts like `scripts/train_diffusion.py`. These scripts use `.yaml` configuration files from the `config/` directory to define the model architecture, dataset, and hyperparameters. The central model, `DiffusionSceneLayout_DDPM`, uses a `Unet1D` as its denoising backbone. The model can be trained unconditionally or conditioned on inputs like text descriptions or partial scenes.
+2. **Training**: The training process is initiated by scripts like `scripts/train_diffusion.py`. These scripts use `.yaml` configuration files from the `config/` directory to define the model architecture, dataset, and hyperparameters. The central model, `DiffusionSceneLayout_DDPM`, uses a `Unet1D` as its denoising backbone. The model can be trained unconditionally or conditioned on inputs like text descriptions or partial scenes.
 
-3.  **Inference (Generation)**: Scene generation is performed by scripts like `scripts/generate_diffusion.py`, which load a pre-trained model. The model generates a scene layout (object parameters like class, position, size). Utility functions in `scene_synthesis/utils.py` then retrieve corresponding 3D models from the dataset to construct the final 3D scene. The `demo/` directory contains example assets and outputs.
+3. **Inference (Generation)**: Scene generation is performed by scripts like `scripts/generate_diffusion.py`, which load a pre-trained model. The model generates a scene layout (object parameters like class, position, size). Utility functions in `scene_synthesis/utils.py` then retrieve corresponding 3D models from the dataset to construct the final 3D scene. The `demo/` directory contains example assets and outputs.
 
 ## Mermaid Diagram
 
@@ -81,7 +81,6 @@ graph TD
     style A1 fill:#dfd,stroke:#333,stroke-width:2px
     style A2 fill:#dfd,stroke:#333,stroke-width:2px
 ```
-
 
 ## Detailed Mermaid Diagram
 
@@ -238,7 +237,7 @@ Floor Textures, etc.)
    22 # IMPORTANT: Set the path to your pre-trained model weights
    23 weight_file = None # e.g., "../pretrained/bedrooms_uncond.pth" 
    24 # IMPORTANT: Set the path to your pickled 3D-FUTURE models
-   25 path_to_pickled_3d_futute_models = "../demo/threed_future_models.pkl"
+   25 path_to_pickled_3d_future_models = "../demo/threed_future_models.pkl"
    26 path_to_floor_plan_textures = "../demo/floor_plan_texture_images"
    27 
    28 # Step 3: Initialize device, config, datasets, and network
@@ -265,7 +264,7 @@ Floor Textures, etc.)
    49     split=config["validation"].get("splits", ["test"])
    50 )
    51 objects_dataset = ThreedFutureDataset.from_pickled_dataset(
-   52     path_to_pickled_3d_futute_models
+   52     path_to_pickled_3d_future_models
    53 )
    54 print(f"Loaded {len(dataset)} scenes and {len(objects_dataset)} 3D models.")
    55 
@@ -471,4 +470,242 @@ Floor Textures, etc.)
 
   This is a significant undertaking. Would you like me to start by modifying the setup.py file to handle the dependencies and the CUDA extensions? This
   would be the most critical first step.
+```
+
+```
+╭─────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│  > When I run it with text conditioning ( @run/generate_text.sh ), where does the text data come from?  │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+ ╭───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+ │ ✔  ReadManyFiles Will attempt to read and concatenate files using patterns: `run/generate_text.sh` (within target directory: `/home/ycho358/GitHub/Diff…  │
+ │                                                                                                                                                           │
+ │    ### ReadManyFiles Result (Target Dir: `/home/ycho358/GitHub/DiffuScene`)                                                                               │
+ │                                                                                                                                                           │
+ │    Successfully read and concatenated content from **1 file(s)**.                                                                                         │
+ │                                                                                                                                                           │
+ │    **Processed Files:**                                                                                                                                   │
+ │    - `run/generate_text.sh`                                                                                                                               │
+ ╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ Based on the scripts and the code, the text data for conditioning comes from the 3D-FRONT dataset itself. It's not provided directly on the command line;
+  instead, it's loaded as part of the dataset specified in the configuration.
+
+  Here's the chain of logic:
+
+   1. `generate_text.sh` sets the config: The script calls generate_diffusion.py and passes a configuration file, for example:
+      config="../config/text/diffusion_bedrooms_instancond_lat32_v_bert.yaml"
+
+   2. `generate_diffusion.py` loads the dataset: Inside generate_diffusion.py, the get_dataset_raw_and_encoded function is called. This function is
+      responsible for loading the scenes, including any associated text descriptions, based on the settings in that .yaml file.
+
+   3. The config file points to the data: Let's examine the config file to see what dataset it specifies.
+ ╭───────────────────────────────────────────────────────────────╮
+ │ ✔  ReadFile /diffusion_bedrooms_instancond_lat32_v_bert.yaml  │
+ ╰───────────────────────────────────────────────────────────────╯
+✦ The config file points to the processed dataset here:
+
+   1 data:
+   2   dataset_directory: "/home/ycho358/GitHub/DiffuScene/downloads/3d_front_processed/bedrooms_objfeats_32_64"
+
+   4. How the text gets into the processed data: The text descriptions are not originally part of the 3D-FRONT dataset. They are added during the data
+      preprocessing step. I'll search for how the text descriptions are added to the dataset. I'll look for description in the codebase.
+ ╭─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+ │ ✔  SearchText 'description' within scene_synthesis                                                                                              │
+ │                                                                                                                                                 │
+ │    Found 32 matches                                                                                                                             │
+ ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ The search results point to scene_synthesis/datasets/threed_front_dataset.py. Let's look at that file.
+ ╭────────────────────────────────────────────────────────╮
+ │ ✔  ReadFile ...hesis/datasets/threed_front_dataset.py  │
+ ╰────────────────────────────────────────────────────────╯
+✦ The file scene_synthesis/datasets/threed_front_dataset.py contains the answer.
+
+  Specifically, the Add_Text class is responsible for generating natural language descriptions of the scenes. Here's how it works:
+
+   1. `add_description(self, sample)` method: This is the core function. It takes a scene sample (which contains object classes, positions, etc.) and
+      programmatically builds a text description.
+   2. It starts with a general statement: It begins by listing the first few objects in the room, for example: "The room has a bed, a table and a chair."
+   3. It describes spatial relationships: It then iterates through the objects and describes their relationships to each other using phrases like "next to",
+      "left of", "behind", etc. These relationships are pre-computed in the add_relation method.
+   4. It handles plurals and articles: The code uses the num2words library to handle numbers (e.g., "two chairs") and a get_article utility to choose "a" or
+      "an" correctly.
+   5. The text is added to the sample: The generated sentence(s) are stored in the sample['description'] field.
+   6. Glove Embeddings: The add_glove_embeddings method then takes this generated text, tokenizes it, and creates GloVe vector embeddings, which are stored
+      in sample['desc_emb']. The BERT-based models likely use a similar process with a BERT tokenizer.
+
+  In summary: The text descriptions are not from an external file or user input. They are procedurally generated from the geometric layout of the 3D
+  scenes during the data loading and preprocessing phase. This generated text is then used to condition the diffusion model.
+```
+
+```
+╭─────────────────────────────────────────────────────────────────────────╮
+│  > Do text descriptions get generated every time the inference is run?  │
+╰─────────────────────────────────────────────────────────────────────────╯
+
+✦ No, the text descriptions are not generated every time inference is run.
+
+  My previous analysis showed that the configuration files used for text-conditioned generation (e.g., diffusion_bedrooms_instancond_lat32_v_bert.yaml)
+  use a specific dataset type:
+
+   1 data:
+   2   dataset_type: "cached_threedfront"
+   3   encoding_type: "cached_diffusion_text_cosin_angle_objfeatsnorm_lat32_wocm"
+   4   dataset_directory: "/home/ycho358/GitHub/DiffuScene/downloads/3d_front_processed/bedrooms_objfeats_32_64"
+
+  The key here is the word `cached`.
+
+  This indicates that the entire dataset, including the procedurally generated text descriptions and their corresponding vector embeddings, is
+  pre-processed and saved to disk once.
+
+  During inference (i.e., when you run generate_text.sh), the script loads this pre-compiled, cached version of the dataset directly from the
+  dataset_directory. This is much more efficient than generating the text descriptions on the fly for every run.
+
+  The text generation process I described earlier is part of a one-time data preprocessing step that you would run to create this cache.
+```
+
+```
+╭───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│  > Do you have a guess on where the text might be (that is, if they exist in plain text form), looking at this folder tree of downloaded data?:   │
+│    ```/media/ycho358/YunhoStrgExt/DiffuScene/downloads                                                                                            │
+│    ├── 3D-FUTURE-model                                                                                                                            │
+│    │   ├──  00030133-9c36-412d-bb48-6123ea2da899                                                                                                  │
+│    │   ├──  00033fdb-e9f8-4abe-aa9b-878761356d35                                                                                                  │
+│    │   ├──  0004ae9a-1d27-4dbd-8416-879e9de1de8d                                                                                                  │
+│    │   └── ... (16562 more items)                                                                                                                 │
+│    ├── 3D-FUTURE-model-processed.zip                                                                                                              │
+│    ├── 3d_front_processed                                                                                                                         │
+│    │   ├── bedrooms_objfeats_32_64                                                                                                                │
+│    │   │   ├──  00110bde-f580-40be-b8bb-88715b338a2a_Bedroom-43072                                                                                │
+│    │   │   ├──  0018b6c8-c3b6-4fb8-a640-4b9b0b763254_MasterBedroom-282636                                                                         │
+│    │   │   ├──  0023b7d1-1439-4e5c-9c7b-c34f155ee856_Bedroom-7177                                                                                 │
+│    │   │   └── ... (4039 more items)                                                                                                              │
+│    │   ├── diningrooms_objfeats_32_64                                                                                                             │
+│    │   │   ├──  00154c06-2ee2-408a-9664-b8fd74742897_DiningRoom-17932                                                                             │
+│    │   │   ├──  002c110c-9bbc-4ab4-affa-4225fb127bad_DiningRoom-1962                                                                              │
+│    │   │   ├──  0047c3ab-951b-4182-9082-b9fbf099c142_LivingDiningRoom-2065                                                                        │
+│    │   │   └── ... (898 more items)                                                                                                               │
+│    │   ├── livingrooms_objfeats_32_64                                                                                                             │
+│    │   │   ├──  0003d406-5f27-4bbf-94cd-1cff7c310ba1_LivingRoom-54780                                                                             │
+│    │   │   ├──  0047c3ab-951b-4182-9082-b9fbf099c142_LivingDiningRoom-2065                                                                        │
+│    │   │   ├──  004f900c-468a-4f70-83cc-aa2c98875264_LivingDiningRoom-27430                                                                       │
+│    │   │   └── ... (811 more items)                                                                                                               │
+│    │   ├── splits                                                                                                                                 │
+│    │   │   ├── bedroom_test.lst                                                                                                                   │
+│    │   │   ├── bedroom_train.lst                                                                                                                  │
+│    │   │   ├── bedroom_val.lst                                                                                                                    │
+│    │   │   ├── diningroom_test.lst                                                                                                                │
+│    │   │   ├── diningroom_train.lst                                                                                                               │
+│    │   │   ├── diningroom_val.lst                                                                                                                 │
+│    │   │   ├── livingroom_test.lst                                                                                                                │
+│    │   │   ├── livingroom_train.lst                                                                                                               │
+│    │   │   └── livingroom_val.lst                                                                                                                 │
+│    │   ├── threed_future_model_bedroom.pkl                                                                                                        │
+│    │   ├── threed_future_model_diningroom.pkl                                                                                                     │
+│    │   ├── threed_future_model_library.pkl                                                                                                        │
+│    │   └── threed_future_model_livingroom.pkl                                                                                                     │
+│    ├── 3d_front_processed.zip                                                                                                                     │
+│    ├── UncondGen                                                                                                                                  │
+│    │   ├── bedroom                                                                                                                                │
+│    │   │   ├── atiss                                                                                                                              │
+│    │   │   │   ├──  Bedroom-11202_83_173.png                                                                                                      │
+│    │   │   │   ├──  Bedroom-11202_83_201.png                                                                                                      │
+│    │   │   │   ├──  Bedroom-11202_83_449.png                                                                                                      │
+│    │   │   │   └── ... (997 more items)                                                                                                           │
+│    │   │   ├── depthGAN                                                                                                                           │
+│    │   │   │   ├──  sample_1002_0.png                                                                                                             │
+│    │   │   │   ├──  sample_1003_0.png                                                                                                             │
+│    │   │   │   ├──  sample_1004_0.png                                                                                                             │
+│    │   │   │   └── ... (996 more items)                                                                                                           │
+│    │   │   ├── diffuscene                                                                                                                         │
+│    │   │   │   ├──  Bedroom-11202_83_592.png                                                                                                      │
+│    │   │   │   ├──  Bedroom-11202_83_619.png                                                                                                      │
+│    │   │   │   ├──  Bedroom-11202_83_841.png                                                                                                      │
+│    │   │   │   └── ... (998 more items)                                                                                                           │
+│    │   │   ├── reference                                                                                                                          │
+│    │   │   │   ├──  00000.png                                                                                                                     │
+│    │   │   │   ├──  00001.png                                                                                                                     │
+│    │   │   │   ├──  00002.png                                                                                                                     │
+│    │   │   │   └── ... (3876 more items)                                                                                                          │
+│    │   │   └── syn2gen                                                                                                                            │
+│    │   │       ├──  0000_3d_pred.png                                                                                                              │
+│    │   │       ├──  0001_3d_pred.png                                                                                                              │
+│    │   │       ├──  0002_3d_pred.png                                                                                                              │
+│    │   │       └── ... (997 more items)                                                                                                           │
+│    │   └── diningroom                                                                                                                             │
+│    │       ├── atiss                                                                                                                              │
+│    │       │   ├──  DiningRoom-10302_25_027.png                                                                                                   │
+│    │       │   ├──  DiningRoom-10302_25_093.png                                                                                                   │
+│    │       │   ├──  DiningRoom-10302_25_237.png                                                                                                   │
+│    │       │   └── ... (997 more items)                                                                                                           │
+│    │       ├── depthGAN                                                                                                                           │
+│    │       │   ├──  sample_1001_0.png                                                                                                             │
+│    │       │   ├──  sample_1003_0.png                                                                                                             │
+│    │       │   ├──  sample_1007_0.png                                                                                                             │
+│    │       │   └── ... (949 more items)                                                                                                           │
+│    │       ├── reference                                                                                                                          │
+│    │       │   ├──  00000.png                                                                                                                     │
+│    │       │   ├──  00001.png                                                                                                                     │
+│    │       │   ├──  00002.png                                                                                                                     │
+│    │       │   └── ... (720 more items)                                                                                                           │
+│    │       └── sync2gen                                                                                                                           │
+│    │           ├──  0000_3d_sync.png                                                                                                              │
+│    │           ├──  0001_3d_sync.png                                                                                                              │
+│    │           ├──  0002_3d_sync.png                                                                                                              │
+│    │           └── ... (997 more items)                                                                                                           │
+│    ├── UncondGen.zip                                                                                                                              │
+│    ├── download.sh                                                                                                                                │
+│    ├── objautoencoder_pretrained                                                                                                                  │
+│    │   ├── bed_living_diningrooms_lat32.pt                                                                                                        │
+│    │   └── bed_living_diningrooms_lat64.pt                                                                                                        │
+│    ├── objautoencoder_pretrained.zip                                                                                                              │
+│    ├── pretrained_diffusion                                                                                                                       │
+│    │   ├── bedrooms_bert                                                                                                                          │
+│    │   │   └── model_32000                                                                                                                        │
+│    │   ├── bedrooms_rearrange                                                                                                                     │
+│    │   │   └── model_17000                                                                                                                        │
+│    │   ├── bedrooms_uncond                                                                                                                        │
+│    │   │   └── model_30000                                                                                                                        │
+│    │   ├── diningrooms_bert                                                                                                                       │
+│    │   │   └── model_148000                                                                                                                       │
+│    │   ├── diningrooms_uncond                                                                                                                     │
+│    │   │   └── model_82000                                                                                                                        │
+│    │   ├── livingrooms_bert                                                                                                                       │
+│    │   │   └── model_118000                                                                                                                       │
+│    │   ├── livingrooms_rearrange                                                                                                                  │
+│    │   │   └── model_81000                                                                                                                        │
+│    │   └── livingrooms_uncond                                                                                                                     │
+│    │       └── model_96000                                                                                                                        │
+│    └── pretrained_diffusion.zip```                                                                                                                │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+✦ Excellent question. Based on the folder structure and our previous discussion about the cached dataset, I can make a very strong guess.
+
+  The plain text descriptions, if they are saved at all, are almost certainly not in simple `.txt` files.
+
+  Instead, they are most likely stored inside the serialized data files for each individual scene. My best guess is that they are located within the
+  directories for each processed room type.
+
+  Specifically, look inside here:
+
+  /media/ycho358/YunhoStrgExt/DiffuScene/downloads/3d_front_processed/bedrooms_objfeats_32_64/
+
+  Inside this directory, you have folders for each scene, like:
+
+  00110bde-f580-40be-b8bb-88715b338a2a_Bedroom-43072/
+
+  My guess is that inside each of these individual scene folders, there is a file (likely a `.pkl` pickle file or a `.npz` numpy archive) that contains 
+  all the processed data for that scene. This single file would bundle everything together:
+
+   * Object bounding boxes (translations, sizes, angles)
+   * Object class labels
+   * Object feature vectors (objfeats)
+   * The room layout mask
+   * And, crucially, the procedurally generated text description (description) and its corresponding GloVe/BERT embedding (desc_emb).
+
+  Why this structure?
+
+  It's highly efficient. When the ThreedFrontDataset loads a scene during training or inference, it just needs to load one file per scene to get all the
+  necessary information, rather than having to read multiple files and piece the data together.
+
+  To confirm this, you could check the contents of one of the individual scene folders. I would expect to see a single .pkl or .npz file in it.
 ```

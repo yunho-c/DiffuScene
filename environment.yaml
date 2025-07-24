@@ -36,3 +36,4 @@ dependencies:
     - torchtext
     - seaborn
     - wandb
+    - rerun-sdk

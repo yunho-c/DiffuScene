@@ -1,6 +1,8 @@
 downloads/*
 !downloads/download.sh
 
+ChamferDistancePytorch
+
 .vector_cache
 .history
 __pycache__
