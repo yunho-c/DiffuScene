@@ -15,7 +15,8 @@ def generate_scene(
     retrive_objfeats=False,
     no_texture=False,
     without_floor=False,
-    seed=0
+    seed=0,
+    text_prompt=None
 ):
     """Generates a single scene based on the provided index and parameters."""
     current_scene = raw_dataset[scene_idx]
@@ -27,12 +28,20 @@ def generate_scene(
         current_scene, path_to_floor_plan_textures, no_texture=no_texture
     )
 
+    # Determine the text to use for generation
+    text_for_generation = text_prompt
+    if text_for_generation is None:
+        text_for_generation = samples.get('description')
+    
+    if text_for_generation is not None:
+        print(f"Using text prompt: '{text_for_generation}'")
+
     # Generate layout
     bbox_params = network.generate_layout(
             room_mask=room_mask.to(device),
             num_points=config["network"]["sample_num_points"],
             point_dim=config["network"]["point_dim"],
-            text=samples.get('description'),
+            text=text_for_generation,
             device=device,
             clip_denoised=clip_denoised,
             batch_seeds=torch.arange(seed, seed + 1),

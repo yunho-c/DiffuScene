@@ -16,8 +16,9 @@ def main():
     # --- Parameters for generation ---
     scene_idx_to_generate = 25  # Change this to generate from a different floor plan
     generation_seed = np.random.randint(1000)  # Change this for different random results
+    text_prompt = "a room with a bed and a chair"  # Change this to your desired text prompt, or set to None to use the dataset's description
 
-    print(f"\n--- Generating scene {scene_idx_to_generate} with seed {generation_seed} ---")
+    print(f"--- Generating scene {scene_idx_to_generate} with seed {generation_seed} ---")
     renderables, _ = generate_scene(
         network=network,
         dataset=dataset,
@@ -28,7 +29,8 @@ def main():
         scene_idx=scene_idx_to_generate,
         path_to_floor_plan_textures=path_to_floor_plan_textures,
         clip_denoised=True,
-        seed=generation_seed
+        seed=generation_seed,
+        text_prompt=text_prompt
     )
 
     # --- Visualize the generated scene ---
@@ -47,7 +49,7 @@ def main():
     ))
 
     # This will open a window to display the scene
-    print("\n--- Showing scene. Close the window to exit. ---")
+    print("--- Showing scene. Close the window to exit. ---")
     show(scene)
 
 if __name__ == "__main__":
